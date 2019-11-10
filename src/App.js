@@ -19,7 +19,9 @@ class App extends PureComponent {
       contract: null,
       currentAccount: null,
       contractInstance: null,
-      confirmingTx: false
+      confirmingTx: false,
+      transactionSuccess: false,
+      currentInterval: null
     }
     this.apiEndpoint = 'web3api.io/api/v2/'
     this.apiKey = 'UAK7acefdf714da8dd18a117280de7452f0'
@@ -134,15 +136,22 @@ class App extends PureComponent {
         const intervalId = setInterval(() => {
           window.web3.eth.getTransactionReceipt(response, function (err, data) {
             if (data) {
-              clearInterval(intervalId)
-              alert(`Congratulations! Your domain ${domainName}.${domainTld} has been registered to you!`)
               _this.setState({
                 confirmingTx: false,
-                domainName: ''
+                transactionSuccess: true
               })
+              window.clearInterval(_this.state.currentInterval)
+              setTimeout(() => {
+                _this.setState({
+                  domainName: '',
+                  currentInterval: null,
+                  transactionSuccess: false
+                })
+              }, 3000)
             }
           })
         }, 100)
+        _this.setState({ currentInterval: intervalId })
       }
     })
   }                  
@@ -154,7 +163,8 @@ class App extends PureComponent {
       tokens,
       validationError,
       confirmingTx,
-      existingRegistry
+      existingRegistry,
+      transactionSuccess
     } = this.state
     const domainString = `${domainName}.${domainTld}`
 
@@ -189,7 +199,7 @@ class App extends PureComponent {
           </button>
         </div>
         {
-          domainName.length && !confirmingTx && !existingRegistry.length
+          domainName.length && !confirmingTx && !existingRegistry.length && !transactionSuccess
           ? <>
               <h4>Preview:</h4>
               <div className={'preview'}></div>
@@ -206,12 +216,17 @@ class App extends PureComponent {
         }
         {
           confirmingTx
-          ? <h4>Confirming registration...</h4>
+          ? <h4>Confirming registration... (this can take a minute)</h4>
           : null
         }
         {
           existingRegistry.length
           ? <h5>{domainString} is already registered and points to: {existingRegistry}</h5>
+          : null
+        }
+        {
+          transactionSuccess
+          ? <h4>Success! Your domain {domainString} has been registered!</h4>
           : null
         }
       </div>
