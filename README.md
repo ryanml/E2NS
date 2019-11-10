@@ -1,68 +1,41 @@
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+## Open Name Services
 
-## Available Scripts
+**Name Services for the rest of us**
 
-In the project directory, you can run:
+The introduction of ENS has been groundbreaking in terms of mapping payment addresses to a readable (and memorable) domain. In the ever-growing ecosystem of ERC-20 tokens, we believed the same idea could extend to all assets.
 
-### `yarn start`
+It started off with a very simple smart contract for mapping, deployed to the Ropsten test network:
 
-Runs the app in the development mode.<br />
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+```
+pragma solidity ^0.5.10;
 
-The page will reload if you make edits.<br />
-You will also see any lint errors in the console.
+contract Open_Name_Registry {
 
-### `yarn test`
+    address[] addresses;
+    string[] domains;
 
-Launches the test runner in the interactive watch mode.<br />
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+    function register(string memory domain) public {
+        addresses.push(msg.sender);
+        domains.push(domain);
+    }
 
-### `yarn build`
+    function lookup(string memory domain) public returns (address add) {
+        for (uint i=0; i<domains.length; i++) {
+            if (compareStrings(domains[i], domain)){
+                return addresses[i];
+            }
+        }
+    }
 
-Builds the app for production to the `build` folder.<br />
-It correctly bundles React in production mode and optimizes the build for the best performance.
+    function compareStrings (string memory a, string memory b) public view 
+       returns (bool) {
+        return (keccak256(abi.encodePacked((a))) == keccak256(abi.encodePacked((b))) );
+    }
+}
+```
 
-The build is minified and the filenames include the hashes.<br />
-Your app is ready to be deployed!
+From here on, work was added as time permitted such as domain hashing and contract-side validation. In the interest of time we chose not to extend ENS, but this is something in the future we'd like to do to further enrich the eco-system.
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+A client side application was built with React.js to act as the registrar. The app fetches the latest list of ERC-20 tokens and provides their symbol as the TLD, as well as an input field for choosing a name unique to the user. If the name is still available, a user need only pay a small gas fee in ETH to facilitate the registry transaction. After 0 seconds to a minute or two, the user is presented with a success message that indicates their mapping is complete.
 
-### `yarn eject`
-
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
-
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (Webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
-
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/code-splitting
-
-### Analyzing the Bundle Size
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size
-
-### Making a Progressive Web App
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app
-
-### Advanced Configuration
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/advanced-configuration
-
-### Deployment
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/deployment
-
-### `yarn build` fails to minify
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify
+As we built this, the motivation to enrich and integrate this with client side providers, such as Brave Crypto Wallets or MetaMask grew. These providers could look out for these ERC-20 domains, call the lookup function in the contract, and facilitate transactions without users needing to know anyone's address. The greatest challenge we faced was time for all of these points of integration. There is certainly more to come in the future!
