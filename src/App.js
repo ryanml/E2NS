@@ -2,6 +2,7 @@ import './App.css'
 import React, { PureComponent } from 'react'
 import CryptoBanner from './banner'
 import { abi } from './abi'
+import Confetti from 'react-confetti'
 
 class App extends PureComponent {
 
@@ -234,7 +235,7 @@ class App extends PureComponent {
   }
 
   render () {
-    const { currentAccount, tokensLoaded } = this.state
+    const { currentAccount, tokensLoaded, transactionSuccess } = this.state
 
     return (
       <div className={'App'}>
@@ -245,6 +246,11 @@ class App extends PureComponent {
         {
           tokensLoaded && currentAccount
           ? this.renderForm()
+          : null
+        }
+        {
+          transactionSuccess
+          ? <Confetti />
           : null
         }
       </div>
